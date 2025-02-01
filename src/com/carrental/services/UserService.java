@@ -1,11 +1,36 @@
 package com.carrental.services;
 
 import com.carrental.db.DatabaseConnection;
+import com.carrental.models.User;
 import com.carrental.interfaces.IUserService;
+
 import java.sql.*;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserService implements IUserService {
+
+    @Override
+    public List<User> getAllUsers() throws SQLException {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT * FROM Users";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                User user = new User(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone")
+                );
+                users.add(user);
+            }
+        }
+        return users;
+    }
+
+    @Override
     public boolean userExists(int userId) throws SQLException {
         String query = "SELECT id FROM Users WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -15,24 +40,25 @@ public class UserService implements IUserService {
         }
     }
 
-    public void addNewUser(int userId) throws SQLException {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Введите имя нового пользователя: ");
-        String name = scanner.nextLine();
-        System.out.print("Введите email нового пользователя: ");
-        String email = scanner.nextLine();
-        System.out.print("Введите телефон нового пользователя: ");
-        String phone = scanner.nextLine();
-
-        String insertUserQuery = "INSERT INTO Users (id, name, email, phone) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(insertUserQuery)) {
-            stmt.setInt(1, userId);
-            stmt.setString(2, name);
-            stmt.setString(3, email);
-            stmt.setString(4, phone);
+    @Override
+    public void addNewUser(String name, String email, String phone) throws SQLException {
+        String query = "INSERT INTO Users (name, email, phone) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, name);
+            stmt.setString(2, email);
+            stmt.setString(3, phone);
             stmt.executeUpdate();
-            System.out.println("Новый пользователь с ID " + userId + " был успешно добавлен в базу данных.");
+        }
+    }
+
+    @Override
+    public void removeUser(int userId) throws SQLException {
+        String query = "DELETE FROM Users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            stmt.executeUpdate();
         }
     }
 }
