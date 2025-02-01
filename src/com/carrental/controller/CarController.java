@@ -17,27 +17,27 @@ public class CarController {
 
     public void displayAvailableCars() throws SQLException {
         List<Car> cars = carService.getAvailableCars();
-        System.out.println("Available Cars:");
+        System.out.println("Доступные автомобили:");
         for (Car car : cars) {
             boolean isAvailable = carService.isCarAvailable(car.getId());
-            System.out.println("Car ID: " + car.getId() + ", Name: " + car.getName() +
-                    ", Model: " + car.getModel() + ", Price per day: " + car.getPricePerDay() + " KZT, Available: " + (isAvailable ? "Yes" : "No"));
+            System.out.println("ID машины: " + car.getId() + ", Название: " + car.getName() +
+                    ", Модель: " + car.getModel() + ", Цена в день: " + car.getPricePerDay() + " KZT, Доступность: " + (isAvailable ? "Да" : "Нет"));
         }
     }
 
     public void addNewCar(Scanner scanner) throws SQLException {
-        System.out.print("Enter the car's name: ");
+        System.out.print("Введите название машины: ");
         String name = scanner.nextLine();
-        System.out.print("Enter the car's model: ");
+        System.out.print("Введите модель машины: ");
         String model = scanner.nextLine();
-        System.out.print("Enter the car's price per day: ");
+        System.out.print("Введите цену за день аренды: ");
         double pricePerDay = scanner.nextDouble();
 
         carService.addNewCar(name, model, pricePerDay);
     }
 
     public void removeCar(Scanner scanner) throws SQLException {
-        System.out.print("Enter the Car ID to remove: ");
+        System.out.print("Введите ID машины для удаления: ");
         int carId = scanner.nextInt();
         carService.removeCar(carId);
     }

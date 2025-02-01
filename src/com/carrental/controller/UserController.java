@@ -17,25 +17,25 @@ public class UserController {
 
     public void displayUsers() throws SQLException {
         List<User> users = userService.getAllUsers();
-        System.out.println("Users:");
+        System.out.println("Пользователи:");
         for (User user : users) {
-            System.out.println("ID: " + user.getId() + ", Name: " + user.getName() + ", Email: " + user.getEmail() + ", Phone: " + user.getPhone());
+            System.out.println("ID: " + user.getId() + ", Имя: " + user.getName() + ", Email: " + user.getEmail() + ", Телефон: " + user.getPhone());
         }
     }
 
     public void addNewUser(Scanner scanner) throws SQLException {
-        System.out.print("Enter the user's name: ");
+        System.out.print("Введите имя пользователя: ");
         String name = scanner.nextLine();
-        System.out.print("Enter the user's email: ");
+        System.out.print("Введите email пользователя: ");
         String email = scanner.nextLine();
-        System.out.print("Enter the user's phone: ");
+        System.out.print("Введите телефон пользователя: ");
         String phone = scanner.nextLine();
 
         userService.addNewUser(name, email, phone);
     }
 
     public void removeUser(Scanner scanner) throws SQLException {
-        System.out.print("Enter the User ID to remove: ");
+        System.out.print("Введите ID пользователя для удаления: ");
         int userId = scanner.nextInt();
         userService.removeUser(userId);
     }
