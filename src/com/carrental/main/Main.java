@@ -6,14 +6,18 @@ import com.carrental.controller.RentalController;
 import com.carrental.services.CarService;
 import com.carrental.services.UserService;
 import com.carrental.services.RentalService;
+import com.carrental.db.PostgreDB;
+import com.carrental.db.interfaces.IDB;
 
 import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        CarService carService = new CarService();
-        UserService userService = new UserService();
-        RentalService rentalService = new RentalService();
+        IDB db = new PostgreDB("jdbc:postgresql://localhost:5432", "postgres", "191030", "CarRentalSystem");
+
+        CarService carService = new CarService(db);
+        UserService userService = new UserService(db);
+        RentalService rentalService = new RentalService(db);
 
         CarController carController = new CarController(carService);
         UserController userController = new UserController(userService);

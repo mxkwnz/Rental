@@ -1,11 +1,16 @@
 package com.carrental.services;
 
-import com.carrental.db.DatabaseConnection;
+import com.carrental.db.interfaces.IDB;
 import com.carrental.interfaces.IRentalService;
 
 import java.sql.*;
 
 public class RentalService implements IRentalService {
+    private IDB db;
+
+    public RentalService(IDB db) {
+        this.db = db;
+    }
 
     @Override
     public void rentCar(int carId, int userId, String startDate, String endDate) throws SQLException {
@@ -16,7 +21,7 @@ public class RentalService implements IRentalService {
 
         String priceQuery = "SELECT price_per_day FROM Cars WHERE id = ?";
         double pricePerDay = 0;
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement priceStmt = conn.prepareStatement(priceQuery)) {
             priceStmt.setInt(1, carId);
             ResultSet priceRs = priceStmt.executeQuery();
@@ -49,7 +54,7 @@ public class RentalService implements IRentalService {
 
     public boolean isCarOccupied(int carId, String startDate, String endDate) throws SQLException {
         String query = "SELECT COUNT(*) FROM Rentals WHERE car_id = ? AND ((start_date <= ? AND end_date >= ?) OR (start_date <= ? AND end_date >= ?))";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, carId);
             stmt.setDate(2, Date.valueOf(endDate));
@@ -66,7 +71,7 @@ public class RentalService implements IRentalService {
 
     public void addRentalDays(int rentalId, String startDate, String endDate) throws SQLException {
         String insertRentalDaysQuery = "INSERT INTO RentalDays (rental_id, rental_date) VALUES (?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertRentalDaysQuery)) {
 
             long diffDays = (Date.valueOf(endDate).getTime() - Date.valueOf(startDate).getTime()) / (1000 * 60 * 60 * 24);
@@ -83,7 +88,7 @@ public class RentalService implements IRentalService {
     @Override
     public void removeRental(int rentalId) throws SQLException {
         String query = "DELETE FROM Rentals WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, rentalId);
             stmt.executeUpdate();
@@ -93,7 +98,7 @@ public class RentalService implements IRentalService {
     @Override
     public void printRentalInvoice(int rentalId) throws SQLException {
         String query = "SELECT * FROM Rentals WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, rentalId);
             ResultSet rs = stmt.executeQuery();
@@ -138,7 +143,7 @@ public class RentalService implements IRentalService {
     @Override
     public void removeRentalDaysByPeriod(int rentalId, String startDate, String endDate) throws SQLException {
         String query = "DELETE FROM RentalDays WHERE rental_id = ? AND rental_date BETWEEN ? AND ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, rentalId);
             stmt.setDate(2, Date.valueOf(startDate));
@@ -151,7 +156,7 @@ public class RentalService implements IRentalService {
     @Override
     public void updateRental(int rentalId, String newStartDate, String newEndDate) throws SQLException {
         String updateQuery = "UPDATE Rentals SET start_date = ?, end_date = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
             stmt.setDate(1, Date.valueOf(newStartDate));
             stmt.setDate(2, Date.valueOf(newEndDate));
