@@ -32,8 +32,10 @@ public class CarController {
         String model = scanner.nextLine();
         System.out.print("Введите цену за день аренды: ");
         double pricePerDay = scanner.nextDouble();
+        System.out.print("Введите ID категории машины: ");
+        int categoryId = scanner.nextInt();  // Asking for categoryId
 
-        carService.addNewCar(name, model, pricePerDay);
+        carService.addNewCar(name, model, pricePerDay, categoryId);  // Pass categoryId here
     }
 
     public void removeCar(Scanner scanner) throws SQLException {

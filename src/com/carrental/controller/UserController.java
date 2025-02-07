@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Scanner;
 
 public class UserController {
-
     private IUserService userService;
 
     public UserController(IUserService userService) {
@@ -18,9 +17,10 @@ public class UserController {
     public void displayUsers() throws SQLException {
         List<User> users = userService.getAllUsers();
         System.out.println("Пользователи:");
-        for (User user : users) {
-            System.out.println("ID: " + user.getId() + ", Имя: " + user.getName() + ", Email: " + user.getEmail() + ", Телефон: " + user.getPhone());
-        }
+        users.forEach(user ->
+                System.out.println("ID: " + user.getId() + ", Имя: " + user.getName() +
+                        ", Email: " + user.getEmail() + ", Телефон: " + user.getPhone())
+        );
     }
 
     public void addNewUser(Scanner scanner) throws SQLException {

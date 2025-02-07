@@ -1,8 +1,8 @@
 package com.carrental.services;
 
 import com.carrental.db.interfaces.IDB;
-import com.carrental.models.User;
 import com.carrental.interfaces.IUserService;
+import com.carrental.models.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class UserService implements IUserService {
     @Override
     public List<User> getAllUsers() throws SQLException {
         List<User> users = new ArrayList<>();
-        String query = "SELECT * FROM Users";
+        String query = "SELECT * FROM Users";  // Example query to get all users
         try (Connection conn = db.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -37,12 +37,12 @@ public class UserService implements IUserService {
 
     @Override
     public boolean userExists(int userId) throws SQLException {
-        String query = "SELECT id FROM Users WHERE id = ?";
+        String query = "SELECT COUNT(*) FROM Users WHERE id = ?";
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
-            return rs.next();
+            return rs.next() && rs.getInt(1) > 0;
         }
     }
 
@@ -65,6 +65,18 @@ public class UserService implements IUserService {
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public boolean hasRole(int userId, String role) throws SQLException {
+        String query = "SELECT COUNT(*) FROM UserRoles WHERE user_id = ? AND role = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            stmt.setString(2, role);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
         }
     }
 }

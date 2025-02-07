@@ -4,6 +4,8 @@ import com.carrental.db.interfaces.IDB;
 import com.carrental.interfaces.IRentalService;
 
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 public class RentalService implements IRentalService {
     private IDB db;
@@ -14,74 +16,24 @@ public class RentalService implements IRentalService {
 
     @Override
     public void rentCar(int carId, int userId, String startDate, String endDate) throws SQLException {
-        if (isCarOccupied(carId, startDate, endDate)) {
-            System.out.println("Машина уже занята в выбранный период. Пожалуйста, выберите другую машину или даты.");
-            return;
-        }
+        String query = "INSERT INTO Rentals (car_id, user_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)";
 
-        String priceQuery = "SELECT price_per_day FROM Cars WHERE id = ?";
-        double pricePerDay = 0;
-        try (Connection conn = db.getConnection();
-             PreparedStatement priceStmt = conn.prepareStatement(priceQuery)) {
-            priceStmt.setInt(1, carId);
-            ResultSet priceRs = priceStmt.executeQuery();
-            if (priceRs.next()) {
-                pricePerDay = priceRs.getDouble("price_per_day");
-            }
+        // Convert Strings to java.sql.Date
+        java.sql.Date sqlStartDate = convertToDate(startDate);
+        java.sql.Date sqlEndDate = convertToDate(endDate);
 
-            long diffDays = (Date.valueOf(endDate).getTime() - Date.valueOf(startDate).getTime()) / (1000 * 60 * 60 * 24);
-            double totalPrice = pricePerDay * diffDays;
-
-            String rentQuery = "INSERT INTO Rentals (car_id, user_id, start_date, end_date, total_price) VALUES (?, ?, ?, ?, ?)";
-            try (PreparedStatement rentStmt = conn.prepareStatement(rentQuery, Statement.RETURN_GENERATED_KEYS)) {
-                rentStmt.setInt(1, carId);
-                rentStmt.setInt(2, userId);
-                rentStmt.setDate(3, Date.valueOf(startDate));
-                rentStmt.setDate(4, Date.valueOf(endDate));
-                rentStmt.setDouble(5, totalPrice);
-                rentStmt.executeUpdate();
-
-                ResultSet generatedKeys = rentStmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    int rentalId = generatedKeys.getInt(1);
-                    System.out.println("Аренда успешно оформлена с ID аренды: " + rentalId);
-                    addRentalDays(rentalId, startDate, endDate);
-                    printRentalInvoice(rentalId);
-                }
-            }
-        }
-    }
-
-    public boolean isCarOccupied(int carId, String startDate, String endDate) throws SQLException {
-        String query = "SELECT COUNT(*) FROM Rentals WHERE car_id = ? AND ((start_date <= ? AND end_date >= ?) OR (start_date <= ? AND end_date >= ?))";
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, carId);
-            stmt.setDate(2, Date.valueOf(endDate));
-            stmt.setDate(3, Date.valueOf(startDate));
-            stmt.setDate(4, Date.valueOf(startDate));
-            stmt.setDate(5, Date.valueOf(endDate));
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next() && rs.getInt(1) > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
+            stmt.setInt(2, userId);
+            stmt.setDate(3, sqlStartDate);
+            stmt.setDate(4, sqlEndDate);
 
-    public void addRentalDays(int rentalId, String startDate, String endDate) throws SQLException {
-        String insertRentalDaysQuery = "INSERT INTO RentalDays (rental_id, rental_date) VALUES (?, ?)";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(insertRentalDaysQuery)) {
+            // Calculate total price based on car rental days
+            double totalPrice = calculateTotalPrice(carId, sqlStartDate, sqlEndDate, conn);
+            stmt.setDouble(5, totalPrice);
 
-            long diffDays = (Date.valueOf(endDate).getTime() - Date.valueOf(startDate).getTime()) / (1000 * 60 * 60 * 24);
-            for (int i = 0; i <= diffDays; i++) {
-                Date rentalDay = new Date(Date.valueOf(startDate).getTime() + (i * (1000 * 60 * 60 * 24)));
-                stmt.setInt(1, rentalId);
-                stmt.setDate(2, rentalDay);
-                stmt.executeUpdate();
-            }
-            System.out.println("Дни аренды успешно добавлены.");
+            stmt.executeUpdate();
         }
     }
 
@@ -97,75 +49,105 @@ public class RentalService implements IRentalService {
 
     @Override
     public void printRentalInvoice(int rentalId) throws SQLException {
-        String query = "SELECT * FROM Rentals WHERE id = ?";
+        String query = "SELECT r.id AS rental_id, c.name AS car_name, c.model AS car_model, " +
+                "u.name AS user_name, u.email AS user_email, r.start_date, r.end_date, r.total_price " +
+                "FROM Rentals r " +
+                "JOIN Cars c ON r.car_id = c.id " +
+                "JOIN Users u ON r.user_id = u.id " +
+                "WHERE r.id = ?";
+
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, rentalId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                int carId = rs.getInt("car_id");
-                int userId = rs.getInt("user_id");
-                String startDate = rs.getString("start_date");
-                String endDate = rs.getString("end_date");
-                double totalPrice = rs.getDouble("total_price");
-
-                String carQuery = "SELECT name FROM Cars WHERE id = ?";
-                String userQuery = "SELECT name FROM Users WHERE id = ?";
-                String carName = "", userName = "";
-
-                try (PreparedStatement carStmt = conn.prepareStatement(carQuery);
-                     PreparedStatement userStmt = conn.prepareStatement(userQuery)) {
-
-                    carStmt.setInt(1, carId);
-                    userStmt.setInt(1, userId);
-
-                    ResultSet carRs = carStmt.executeQuery();
-                    ResultSet userRs = userStmt.executeQuery();
-
-                    if (carRs.next()) {
-                        carName = carRs.getString("name");
-                    }
-                    if (userRs.next()) {
-                        userName = userRs.getString("name");
-                    }
-                }
-
                 System.out.println("Чек аренды:");
-                System.out.println("Машина: " + carName);
-                System.out.println("Пользователь: " + userName);
-                System.out.println("Дата начала: " + startDate);
-                System.out.println("Дата окончания: " + endDate);
-                System.out.println("Общая стоимость: " + totalPrice + " KZT");
+                System.out.println("Машина: " + rs.getString("car_name") + " (" + rs.getString("car_model") + ")");
+                System.out.println("Клиент: " + rs.getString("user_name") + " - " + rs.getString("user_email"));
+                System.out.println("Дата начала: " + rs.getDate("start_date"));
+                System.out.println("Дата окончания: " + rs.getDate("end_date"));
+                System.out.println("Общая стоимость: " + rs.getDouble("total_price") + " KZT");
             }
         }
     }
 
     @Override
-    public void removeRentalDaysByPeriod(int rentalId, String startDate, String endDate) throws SQLException {
-        String query = "DELETE FROM RentalDays WHERE rental_id = ? AND rental_date BETWEEN ? AND ?";
+    public boolean isCarOccupied(int carId, String startDate, String endDate) throws SQLException {
+        String query = "SELECT COUNT(*) FROM Rentals WHERE car_id = ? AND " +
+                "((start_date BETWEEN ? AND ?) OR (end_date BETWEEN ? AND ?))";
+
+        java.sql.Date sqlStartDate = convertToDate(startDate);
+        java.sql.Date sqlEndDate = convertToDate(endDate);
+
         try (Connection conn = db.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, rentalId);
-            stmt.setDate(2, Date.valueOf(startDate));
-            stmt.setDate(3, Date.valueOf(endDate));
+            stmt.setInt(1, carId);
+            stmt.setDate(2, sqlStartDate);
+            stmt.setDate(3, sqlEndDate);
+            stmt.setDate(4, sqlStartDate);
+            stmt.setDate(5, sqlEndDate);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next() && rs.getInt(1) > 0;
+        }
+    }
+
+    @Override
+    public void removeRentalDaysByPeriod(int rentalId, String startDate, String endDate) throws SQLException {
+        String query = "UPDATE Rentals SET end_date = ? WHERE id = ? AND start_date = ?";
+        java.sql.Date sqlStartDate = convertToDate(startDate);
+        java.sql.Date sqlEndDate = convertToDate(endDate);
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setDate(1, sqlEndDate);
+            stmt.setInt(2, rentalId);
+            stmt.setDate(3, sqlStartDate);
             stmt.executeUpdate();
-            System.out.println("Дни аренды удалены.");
         }
     }
 
     @Override
     public void updateRental(int rentalId, String newStartDate, String newEndDate) throws SQLException {
-        String updateQuery = "UPDATE Rentals SET start_date = ?, end_date = ? WHERE id = ?";
+        String query = "UPDATE Rentals SET start_date = ?, end_date = ? WHERE id = ?";
+        java.sql.Date sqlNewStartDate = convertToDate(newStartDate);
+        java.sql.Date sqlNewEndDate = convertToDate(newEndDate);
+
         try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(updateQuery)) {
-            stmt.setDate(1, Date.valueOf(newStartDate));
-            stmt.setDate(2, Date.valueOf(newEndDate));
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setDate(1, sqlNewStartDate);
+            stmt.setDate(2, sqlNewEndDate);
             stmt.setInt(3, rentalId);
             stmt.executeUpdate();
-            System.out.println("Аренда обновлена.");
-
-            removeRentalDaysByPeriod(rentalId, newStartDate, newEndDate);
-            addRentalDays(rentalId, newStartDate, newEndDate);
         }
+    }
+
+    // Helper method to convert String to java.sql.Date
+    private java.sql.Date convertToDate(String dateStr) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            java.util.Date parsedDate = sdf.parse(dateStr);
+            return new java.sql.Date(parsedDate.getTime());
+        } catch (ParseException e) {
+            throw new RuntimeException("Invalid date format! Use yyyy-MM-dd", e);
+        }
+    }
+
+    // Helper method to calculate total price based on car rental days
+    private double calculateTotalPrice(int carId, java.sql.Date startDate, java.sql.Date endDate, Connection conn) throws SQLException {
+        String priceQuery = "SELECT price_per_day FROM Cars WHERE id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(priceQuery)) {
+            stmt.setInt(1, carId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                double pricePerDay = rs.getDouble("price_per_day");
+
+                // Calculate rental duration in days
+                long diffInMillis = endDate.getTime() - startDate.getTime();
+                int rentalDays = (int) (diffInMillis / (1000 * 60 * 60 * 24));
+
+                return rentalDays * pricePerDay;
+            }
+        }
+        return 0;
     }
 }

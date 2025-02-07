@@ -16,9 +16,22 @@ public class CarService implements ICarService {
     }
 
     @Override
+    public void addNewCar(String name, String model, double pricePerDay, int categoryId) throws SQLException {
+        String query = "INSERT INTO Cars (name, model, availability, price_per_day, category_id) VALUES (?, ?, TRUE, ?, ?)";
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, name);
+            stmt.setString(2, model);
+            stmt.setDouble(3, pricePerDay);
+            stmt.setInt(4, categoryId);
+            stmt.executeUpdate();
+        }
+    }
+
+    @Override
     public List<Car> getAvailableCars() throws SQLException {
-        List<Car> cars = new ArrayList<>();
-        String query = "SELECT * FROM Cars";
+        List<Car> availableCars = new ArrayList<>();
+        String query = "SELECT * FROM Cars WHERE availability = TRUE";  // Only fetch available cars
         try (Connection conn = db.getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
@@ -30,22 +43,10 @@ public class CarService implements ICarService {
                         rs.getBoolean("availability"),
                         rs.getDouble("price_per_day")
                 );
-                cars.add(car);
+                availableCars.add(car);
             }
         }
-        return cars;
-    }
-
-    @Override
-    public void addNewCar(String name, String model, double pricePerDay) throws SQLException {
-        String query = "INSERT INTO Cars (name, model, availability, price_per_day) VALUES (?, ?, TRUE, ?)";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, name);
-            stmt.setString(2, model);
-            stmt.setDouble(3, pricePerDay);
-            stmt.executeUpdate();
-        }
+        return availableCars;
     }
 
     @Override
@@ -73,10 +74,9 @@ public class CarService implements ICarService {
                         rs.getBoolean("availability"),
                         rs.getDouble("price_per_day")
                 );
-            } else {
-                throw new SQLException("Car not found.");
             }
         }
+        return null;
     }
 
     @Override
@@ -88,9 +88,8 @@ public class CarService implements ICarService {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return rs.getBoolean("availability");
-            } else {
-                return false;
             }
         }
+        return false;
     }
 }

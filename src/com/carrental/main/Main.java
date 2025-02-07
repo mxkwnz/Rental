@@ -13,7 +13,7 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        IDB db = new PostgreDB("jdbc:postgresql://localhost:5432", "postgres", "191030", "CarRentalSystem");
+        IDB db = new PostgreDB("jdbc:postgresql://localhost:5432", "postgres", "taktalif12", "postgres");
 
         CarService carService = new CarService(db);
         UserService userService = new UserService(db);
