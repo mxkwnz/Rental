@@ -1,23 +1,39 @@
 package com.carrental.factory;
 
 import com.carrental.db.PostgreDB;
-import com.carrental.db.interfaces.IDB;
 import com.carrental.services.CarService;
-import com.carrental.services.RentalService;
 import com.carrental.services.UserService;
+import com.carrental.services.RentalService;
 
 public class ServiceFactory {
-    private static final IDB db = new PostgreDB("jdbc:postgresql://localhost:5432", "postgres", "password", "carrental");
+    private static ServiceFactory instance;
+    private CarService carService;
+    private UserService userService;
+    private RentalService rentalService;
 
-    public static CarService getCarService() {
-        return new CarService(db);
+    private ServiceFactory() {
+        PostgreDB db = new PostgreDB();
+        carService = new CarService(db);
+        userService = new UserService(db);
+        rentalService = new RentalService(db);
     }
 
-    public static UserService getUserService() {
-        return new UserService(db);
+    public static ServiceFactory getInstance() {
+        if (instance == null) {
+            instance = new ServiceFactory();
+        }
+        return instance;
     }
 
-    public static RentalService getRentalService() {
-        return new RentalService(db);
+    public CarService getCarService() {
+        return carService;
+    }
+
+    public UserService getUserService() {
+        return userService;
+    }
+
+    public RentalService getRentalService() {
+        return rentalService;
     }
 }
