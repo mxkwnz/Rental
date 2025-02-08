@@ -44,9 +44,9 @@ public class MyAppApplication {
             } else if (choice == 3) {
                 rentalController.startRentalProcess(scanner);
             } else if (choice == 4) {
-                userController.addNewUser(scanner);
+                userController.addUser(scanner, "MANAGER");
             } else if (choice == 5) {
-                userController.removeUser(scanner);
+                userController.removeUser(scanner, "MANAGER");
             } else if (choice == 6) {
                 break;
             }

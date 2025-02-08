@@ -105,7 +105,33 @@ public class UserService {
             System.err.println("Error while retrieving the list of users: " + e.getMessage());
             throw e;
         }
+        return users;
+    }
 
+    public List<User> getUsersByRole(String role) throws SQLException {
+        String query = "SELECT id, name, email, phone, role FROM users WHERE role = ?";
+        List<User> users = new ArrayList<>();
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, role);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                users.add(new User(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("email"),
+                        rs.getString("phone"),
+                        null,
+                        rs.getString("role")
+                ));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving users by role: " + e.getMessage());
+            throw e;
+        }
         return users;
     }
 }
