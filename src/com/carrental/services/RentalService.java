@@ -1,116 +1,149 @@
 package com.carrental.services;
 
-import com.carrental.db.interfaces.IDB;
+import com.carrental.db.PostgreDB;
+import com.carrental.models.Rental;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class RentalService {
-    private IDB db;
+    private PostgreDB db;
 
-    public RentalService(IDB db) {
+    public RentalService(PostgreDB db) {
         this.db = db;
     }
 
     public void rentCar(int carId, int userId, String startDate, String endDate) throws SQLException {
-        String query = "INSERT INTO Rentals (car_id, user_id, start_date, end_date, status) VALUES (?, ?, ?, ?, 'PENDING')";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        String query = "INSERT INTO rentals (car_id, user_id, start_date, end_date, status) VALUES (?, ?, ?, ?, ?)";
 
-            stmt.setInt(1, carId);
-            stmt.setInt(2, userId);
-            stmt.setDate(3, java.sql.Date.valueOf(startDate));
-            stmt.setDate(4, java.sql.Date.valueOf(endDate));
-            stmt.executeUpdate();
+        try (Connection connection = db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
 
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    int rentalId = rs.getInt(1);
-                    System.out.println("Car rental process started successfully.");
-                    printReceipt(rentalId);
-                } else {
-                    System.err.println("Error: Unable to retrieve rental ID.");
-                }
+            statement.setInt(1, carId);
+            statement.setInt(2, userId);
+            statement.setString(3, startDate);
+            statement.setString(4, endDate);
+            statement.setString(5, "Pending");
+
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Car rented successfully.");
+            } else {
+                System.out.println("Failed to rent the car.");
             }
         }
     }
 
-    private void printReceipt(int rentalId) throws SQLException {
-        String query = "SELECT r.id AS rental_id, u.name AS user_name, c.model AS car_model, c.rate_per_day, " +
-                "r.start_date, r.end_date " +
-                "FROM Rentals r " +
-                "JOIN Users u ON r.user_id = u.id " +
-                "JOIN Cars c ON r.car_id = c.id " +
-                "WHERE r.id = ?";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+    public List<Rental> getAllRentals() throws SQLException {
+        List<Rental> rentals = new ArrayList<>();
+        String query = "SELECT * FROM rentals";
 
-            stmt.setInt(1, rentalId);
+        try (Connection connection = db.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    String userName = rs.getString("user_name");
-                    String carModel = rs.getString("car_model");
-                    double ratePerDay = rs.getDouble("rate_per_day");
-                    Date startDate = rs.getDate("start_date");
-                    Date endDate = rs.getDate("end_date");
-
-                    long days = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
-                    double totalCost = days * ratePerDay;
-
-                    System.out.println("========== RENTAL RECEIPT ==========");
-                    System.out.printf("Rental ID: %d\n", rentalId);
-                    System.out.printf("Customer Name: %s\n", userName);
-                    System.out.printf("Car Model: %s\n", carModel);
-                    System.out.printf("Rate per Day: %.2f\n", ratePerDay);
-                    System.out.printf("Start Date: %s\n", startDate);
-                    System.out.printf("End Date: %s\n", endDate);
-                    System.out.printf("Total Days: %d\n", days);
-                    System.out.printf("Total Cost: %.2f\n", totalCost);
-                    System.out.println("====================================");
-                } else {
-                    System.err.println("Error: Receipt data not found.");
-                }
+            while (resultSet.next()) {
+                Rental rental = new Rental(
+                        resultSet.getInt("id"),
+                        resultSet.getInt("user_id"),
+                        resultSet.getInt("car_id"),
+                        resultSet.getString("start_date"),
+                        resultSet.getString("end_date"),
+                        resultSet.getString("status")
+                );
+                rentals.add(rental);
             }
         }
+        return rentals;
     }
 
-    // Метод для обновления статуса аренды
     public void updateRentalStatus(int rentalId, boolean approve) throws SQLException {
-        String query = "UPDATE Rentals SET status = ? WHERE id = ?";
-        try (Connection conn = db.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, approve ? "APPROVED" : "REJECTED");
-            stmt.setInt(2, rentalId);
-            stmt.executeUpdate();
+        String status = approve ? "Approved" : "Rejected";
+        String query = "UPDATE rentals SET status = ? WHERE id = ?";
+
+        try (Connection connection = db.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setString(1, status);
+            statement.setInt(2, rentalId);
+
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Rental status updated to " + status);
+            } else {
+                System.out.println("Failed to update rental status.");
+            }
         }
     }
 
-    public void getAllRentals() throws SQLException {
-        String query = "SELECT * FROM Rentals";
-        try (Connection conn = db.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+    public void manageRentals(Scanner scanner) throws SQLException {
+        List<Rental> rentals = getAllRentals();
 
-            System.out.println("List of all rentals:");
-            while (rs.next()) {
-                System.out.printf("Rental ID: %d, Car ID: %d, User ID: %d, Start: %s, End: %s, Status: %s\n",
-                        rs.getInt("id"), rs.getInt("car_id"), rs.getInt("user_id"),
-                        rs.getDate("start_date"), rs.getDate("end_date"),
-                        rs.getString("status"));
+        if (rentals.isEmpty()) {
+            System.out.println("No rentals available to manage.");
+            return;
+        }
+
+        System.out.println("Managing rentals...");
+        System.out.println("\nList of Rentals:");
+
+        for (int i = 0; i < rentals.size(); i++) {
+            Rental rental = rentals.get(i);
+            System.out.println((i + 1) + ". Rental ID: " + rental.getRentalId() +
+                    ", Car ID: " + rental.getCarId() +
+                    ", User ID: " + rental.getUserId() +
+                    ", Start Date: " + rental.getStartDate() +
+                    ", End Date: " + rental.getEndDate() +
+                    ", Status: " + rental.getStatus());
+        }
+
+        System.out.print("Enter rental ID to approve/reject (or 0 to return): ");
+        int rentalId = scanner.nextInt();
+        scanner.nextLine();
+
+        if (rentalId == 0) {
+            System.out.println("Returning to menu...");
+            return;
+        }
+
+        Rental selectedRental = null;
+        for (Rental rental : rentals) {
+            if (rental.getRentalId() == rentalId) {
+                selectedRental = rental;
+                break;
             }
         }
+
+        if (selectedRental == null) {
+            System.out.println("Invalid rental ID. Returning to menu...");
+            return;
+        }
+
+        System.out.print("Approve this rental? (yes/no): ");
+        String decision = scanner.nextLine();
+        boolean approve = decision.equalsIgnoreCase("yes");
+
+        updateRentalStatus(rentalId, approve);
+        System.out.println("Rental status updated to " + (approve ? "Approved" : "Rejected"));
     }
 
     public void getRentedCars() throws SQLException {
-        String query = "SELECT * FROM Rentals WHERE status = 'APPROVED'";
-        try (Connection conn = db.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+        String query = "SELECT * FROM rentals WHERE status = 'Approved'";
 
-            System.out.println("Currently Rented Cars:");
-            while (rs.next()) {
-                System.out.printf("Rental ID: %d, Car ID: %d, User ID: %d, Start: %s, End: %s\n",
-                        rs.getInt("id"), rs.getInt("car_id"), rs.getInt("user_id"),
-                        rs.getDate("start_date"), rs.getDate("end_date"));
+        try (Connection connection = db.getConnection();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(query)) {
+
+            while (resultSet.next()) {
+                int rentalId = resultSet.getInt("id");
+                int carId = resultSet.getInt("car_id");
+                int userId = resultSet.getInt("user_id");
+                String startDate = resultSet.getString("start_date");
+                String endDate = resultSet.getString("end_date");
+
+                System.out.println("Rental ID: " + rentalId + ", Car ID: " + carId + ", User ID: " + userId +
+                        ", Start Date: " + startDate + ", End Date: " + endDate);
             }
         }
     }

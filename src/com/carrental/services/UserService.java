@@ -3,10 +3,7 @@ package com.carrental.services;
 import com.carrental.db.interfaces.IDB;
 import com.carrental.models.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +33,22 @@ public class UserService {
         }
     }
 
+    public void addManager(String name, String email) throws SQLException {
+        String query = "INSERT INTO users (name, email, role) VALUES (?, ?, 'MANAGER')";
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, name);
+            stmt.setString(2, email);
+            stmt.executeUpdate();
+
+            System.out.println("Manager successfully added.");
+        } catch (SQLException e) {
+            System.err.println("Error while adding manager: " + e.getMessage());
+            throw e;
+        }
+    }
+
     public void removeUser(int userId) throws SQLException {
         String query = "DELETE FROM users WHERE id = ?";
         try (Connection conn = db.getConnection();
@@ -51,6 +64,25 @@ public class UserService {
             }
         } catch (SQLException e) {
             System.err.println("Error while removing user: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public void removeManager(int managerId) throws SQLException {
+        String query = "DELETE FROM users WHERE id = ? AND role = 'MANAGER'";
+        try (Connection conn = db.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, managerId);
+            int rowsAffected = stmt.executeUpdate();
+
+            if (rowsAffected > 0) {
+                System.out.println("Manager successfully removed.");
+            } else {
+                System.out.println("Manager with ID " + managerId + " not found.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error while removing manager: " + e.getMessage());
             throw e;
         }
     }
@@ -133,5 +165,25 @@ public class UserService {
             throw e;
         }
         return users;
+    }
+
+    public void viewManagers() throws SQLException {
+        String query = "SELECT id, name, email FROM users WHERE role = 'MANAGER'";
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                System.out.printf("ID: %d, Name: %s, Email: %s%n", rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+            }
+        }
+    }
+
+    public void viewCustomers() throws SQLException {
+        String query = "SELECT id, name, email FROM users WHERE role = 'CUSTOMER'";
+        try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                System.out.printf("ID: %d, Name: %s, Email: %s%n", rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+            }
+        }
     }
 }

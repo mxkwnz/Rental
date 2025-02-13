@@ -13,7 +13,7 @@ public class PostgreDB implements IDB {
     private Connection connection;
 
     public PostgreDB() {
-        this("localhost", "postgres", "postgres1", "taktalif12");
+        this("localhost", "postgres", "postgres", "E00244631");
     }
 
     public PostgreDB(String host, String database, String user, String password) {

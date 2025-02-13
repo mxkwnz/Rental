@@ -1,69 +1,44 @@
 package com.carrental.models;
 
-import java.sql.Date;
-
 public class Rental {
     private int rentalId;
-    private Car car;
-    private User user;
-    private Date startDate;
-    private Date endDate;
-    private double totalPrice;
+    private int carId;
+    private int userId;
+    private String startDate;
+    private String endDate;
+    private String status;
 
-    public Rental(int rentalId, Car car, User user, Date startDate, Date endDate, double totalPrice) {
+    public Rental(int rentalId, int carId, int userId, String startDate, String endDate, String status) {
         this.rentalId = rentalId;
-        this.car = car;
-        this.user = user;
+        this.carId = carId;
+        this.userId = userId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.totalPrice = totalPrice;
+        this.status = status;
     }
 
     public int getRentalId() {
         return rentalId;
     }
 
-    public void setRentalId(int rentalId) {
-        this.rentalId = rentalId;
+    public int getCarId() {
+        return carId;  // Геттер для carId
     }
 
-    public Car getCar() {
-        return car;
+    public int getUserId() {
+        return userId;
     }
 
-    public void setCar(Car car) {
-        this.car = car;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Date getStartDate() {
+    public String getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
+    public String getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
+    public String getStatus() {
+        return status;
     }
 
-    public double getTotalPrice() {
-        return totalPrice;
-    }
-
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
-    }
 }

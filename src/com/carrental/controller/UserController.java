@@ -4,14 +4,25 @@ import com.carrental.models.User;
 import com.carrental.services.UserService;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Scanner;
 
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    public User authenticateUser(int userId, String password, String role) {
+        try {
+            User user = userService.authenticateUser(userId, password);
+            if (user != null && user.getRole().equals(role)) {
+                return user;
+            }
+        } catch (SQLException e) {
+            System.out.println("Error while authenticating user: " + e.getMessage());
+        }
+        return null;
     }
 
     public void addUser(Scanner scanner, String role) throws SQLException {
@@ -44,13 +55,11 @@ public class UserController {
 
     public void displayCustomers() throws SQLException {
         System.out.println("All Customers:");
-        List<User> customers = userService.getUsersByRole("CUSTOMER");
-        customers.forEach(System.out::println);
+        userService.viewCustomers();
     }
 
     public void displayManagers() throws SQLException {
         System.out.println("All Managers:");
-        List<User> managers = userService.getUsersByRole("MANAGER");
-        managers.forEach(System.out::println);
+        userService.viewManagers();
     }
 }
