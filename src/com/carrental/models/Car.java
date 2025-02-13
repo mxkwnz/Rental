@@ -8,7 +8,6 @@ public class Car {
     private double pricePerDay;
     private VehicleCategory category;
 
-    // Constructor
     public Car(int id, String brand, String model, boolean available, double pricePerDay, VehicleCategory category) {
         this.id = id;
         this.brand = brand;
@@ -18,7 +17,6 @@ public class Car {
         this.category = category;
     }
 
-    // Getters and setters for the fields
     public int getId() {
         return id;
     }
@@ -67,7 +65,6 @@ public class Car {
         this.category = category;
     }
 
-    // Override toString() to provide a custom string representation of the car
     @Override
     public String toString() {
         return String.format("Car ID: %d, Brand: %s, Model: %s, Price per day: %.2f, Available: %b, Category: %s",
