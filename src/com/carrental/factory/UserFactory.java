@@ -15,7 +15,6 @@ public class UserFactory {
         return instance;
     }
 
-
     public User createUser(int id, String name, String email, String phone, String password, Role role) {
         return new User(id, name, email, phone, password, role.name());
     }
