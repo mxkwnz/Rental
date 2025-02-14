@@ -4,6 +4,7 @@ public class Validator {
         return email.matches("^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$");
     }
 
+
     public static boolean isValidPrice(double price) {
         return price > 0;
     }
