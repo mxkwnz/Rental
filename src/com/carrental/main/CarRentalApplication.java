@@ -22,6 +22,7 @@ public class CarRentalApplication {
         System.out.println("Enter Password: ");
         String password = scanner.nextLine();
 
+
         try {
             User user = userService.authenticateUser(userId, password);
 

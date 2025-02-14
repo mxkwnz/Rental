@@ -177,6 +177,7 @@ public class UserService {
         }
     }
 
+
     public void viewCustomers() throws SQLException {
         String query = "SELECT id, name, email FROM users WHERE role = 'CUSTOMER'";
         try (Connection conn = db.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {

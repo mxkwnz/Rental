@@ -8,6 +8,7 @@ public class AdminController {
         System.out.println("Manager added: " + newAdmin.getName());
     }
 
+
     public void removeManager(int managerId) {
         System.out.println("Manager with ID " + managerId + " removed.");
     }

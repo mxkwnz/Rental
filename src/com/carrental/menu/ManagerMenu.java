@@ -17,6 +17,7 @@ public class ManagerMenu implements Menu {
         this.userController = userController;
     }
 
+
     @Override
     public void displayMenu() {
         System.out.println("\n===== MANAGER MENU =====");

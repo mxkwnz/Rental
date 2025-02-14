@@ -4,6 +4,7 @@ import com.carrental.models.Car;
 import java.sql.SQLException;
 import java.util.List;
 
+
 public interface ICarService {
     boolean isCarAvailable(int carId) throws SQLException;
     List<Car> getAvailableCars() throws SQLException;
