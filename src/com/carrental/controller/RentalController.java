@@ -58,9 +58,7 @@ public class RentalController {
                     String startDate = scanner.nextLine();
 
                     System.out.print("Enter end date of the rent (YYYY-MM-DD): ");
-                    String endDate = scanner.nextLine();
-
-                    rentalService.rentCar(carId, userId, startDate, endDate);
+                    String endDate = scanner.nextLine();rentalService.rentCar(carId, userId, startDate, endDate);
                     System.out.println("Rental process completed successfully.");
                     return;
                 }
