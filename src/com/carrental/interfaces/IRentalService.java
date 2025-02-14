@@ -1,5 +1,4 @@
 package com.carrental.interfaces;
-
 import java.sql.SQLException;
 
 public interface IRentalService {

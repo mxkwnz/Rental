@@ -10,6 +10,5 @@ public interface IUserService {
     boolean userExists(int userId) throws SQLException;
     void addNewUser(String name, String email, String phone) throws SQLException;
     void removeUser(int userId) throws SQLException;
-
     boolean hasRole(int userId, String role) throws SQLException;
 }

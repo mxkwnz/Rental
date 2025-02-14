@@ -32,7 +32,6 @@ public class PostgreDB implements IDB {
         }
         return connection;
     }
-
     @Override
     public void close() throws SQLException {
         if (connection != null && !connection.isClosed()) {

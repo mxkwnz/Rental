@@ -15,7 +15,8 @@ public class VehicleFactory {
         return instance;
     }
 
+
     public Car createVehicle(int id, String brand, String model, boolean available, double pricePerDay, VehicleCategory category) {
-        return new Car(id, brand, model, available, pricePerDay, category);  // Added VehicleCategory as an argument
+        return new Car(id, brand, model, available, pricePerDay, category);
     }
 }

@@ -28,11 +28,9 @@ public class ServiceFactory {
     public CarService getCarService() {
         return carService;
     }
-
     public UserService getUserService() {
         return userService;
     }
-
     public RentalService getRentalService() {
         return rentalService;
     }

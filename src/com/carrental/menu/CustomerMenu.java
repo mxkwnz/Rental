@@ -22,6 +22,7 @@ public class CustomerMenu {
         System.out.println("0. Exit");
     }
 
+
     public void handleChoice(int choice) throws SQLException {
         switch (choice) {
             case 1:

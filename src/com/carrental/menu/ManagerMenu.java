@@ -30,6 +30,7 @@ public class ManagerMenu implements Menu {
         System.out.println("0. Exit");
     }
 
+
     @Override
     public void handleChoice(int choice) {
         try {
