@@ -63,6 +63,7 @@ public class MyAppApplication {
         UserController userController = new UserController(userService);
         RentalController rentalController = new RentalController(rentalService, carService);  // Исправлено: передаем только два параметра
 
+
         MyAppApplication app = new MyAppApplication(carController, userController, rentalController);
         app.run();
     }

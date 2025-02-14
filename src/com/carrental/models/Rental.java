@@ -8,6 +8,7 @@ public class Rental {
     private String endDate;
     private String status;
 
+
     public Rental(int rentalId, int carId, int userId, String startDate, String endDate, String status) {
         this.rentalId = rentalId;
         this.carId = carId;

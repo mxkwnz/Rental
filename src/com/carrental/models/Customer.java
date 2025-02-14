@@ -8,6 +8,7 @@ public class Customer {
     private String email;
     private List<String> rentalHistory;
 
+
     public Customer(int id, String name, String email, List<String> rentalHistory) {
         this.id = id;
         this.name = name;

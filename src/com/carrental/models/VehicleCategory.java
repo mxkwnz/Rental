@@ -1,5 +1,6 @@
 package com.carrental.models;
 
+
 public enum VehicleCategory {
     SEDAN,
     SUV,

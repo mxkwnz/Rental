@@ -24,4 +24,5 @@ public class SecureRentalController {
         }
         System.out.println("Rental status updated.");
     }
+
 }

@@ -10,6 +10,7 @@ public class CustomerMenu {
     private RentalController rentalController;
     private CarController carController;
 
+
     public CustomerMenu(RentalController rentalController, CarController carController) {
         this.rentalController = rentalController;
         this.carController = carController;

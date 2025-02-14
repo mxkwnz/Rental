@@ -15,6 +15,7 @@ public class CarService {
         this.db = db;
     }
 
+
     public void addNewCar(String brand, String model, double price, boolean available, VehicleCategory category) throws SQLException {
         String query = "INSERT INTO cars (brand, model, rate_per_day, available, category) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = db.getConnection();

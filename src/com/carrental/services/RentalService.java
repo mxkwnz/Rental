@@ -98,6 +98,7 @@ public class RentalService {
                     ", Status: " + rental.getStatus());
         }
 
+
         System.out.print("Enter rental ID to approve/reject (or 0 to return): ");
         int rentalId = scanner.nextInt();
         scanner.nextLine();

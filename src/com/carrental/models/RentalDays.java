@@ -11,6 +11,7 @@ public class RentalDays {
         this.rentalDate = rentalDate;
     }
 
+
     public int getRentalId() {
         return rentalId;
     }

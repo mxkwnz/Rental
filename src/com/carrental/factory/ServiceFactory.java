@@ -18,6 +18,7 @@ public class ServiceFactory {
         rentalService = new RentalService(db);
     }
 
+
     public static ServiceFactory getInstance() {
         if (instance == null) {
             instance = new ServiceFactory();

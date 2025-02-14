@@ -8,6 +8,7 @@ public class Car {
     private double pricePerDay;
     private VehicleCategory category;
 
+
     public Car(int id, String brand, String model, boolean available, double pricePerDay, VehicleCategory category) {
         this.id = id;
         this.brand = brand;

@@ -1,6 +1,7 @@
 package com.carrental.interfaces;
 import java.sql.SQLException;
 
+
 public interface IRentalService {
     void rentCar(int carId, int userId, String startDate, String endDate) throws SQLException;
     void removeRental(int rentalId) throws SQLException;
