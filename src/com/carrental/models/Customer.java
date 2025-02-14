@@ -46,4 +46,5 @@ public class Customer {
     public void setRentalHistory(List<String> rentalHistory) {
         this.rentalHistory = rentalHistory;
     }
+
 }

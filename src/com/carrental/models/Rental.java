@@ -15,6 +15,7 @@ public class Rental {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
+
     }
 
     public int getRentalId() {

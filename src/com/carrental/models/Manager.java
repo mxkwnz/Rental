@@ -9,6 +9,7 @@ public class Manager {
         this.id = id;
         this.name = name;
         this.email = email;
+
     }
 
     public int getId() {
@@ -34,4 +35,5 @@ public class Manager {
     public void setEmail(String email) {
         this.email = email;
     }
+
 }

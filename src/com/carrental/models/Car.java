@@ -17,6 +17,7 @@ public class Car {
         this.category = category;
     }
 
+    // Getters and setters for the fields
     public int getId() {
         return id;
     }
@@ -69,5 +70,7 @@ public class Car {
     public String toString() {
         return String.format("Car ID: %d, Brand: %s, Model: %s, Price per day: %.2f, Available: %b, Category: %s",
                 id, brand, model, pricePerDay, available, category);
+
     }
+
 }

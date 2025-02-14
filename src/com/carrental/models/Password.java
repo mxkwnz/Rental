@@ -17,9 +17,11 @@ public class Password {
         this.password = password;
     }
 
+
     public boolean isValid() {
         String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$";
         return Pattern.matches(regex, this.password);
+
     }
 
     public boolean matches(Password other) {

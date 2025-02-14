@@ -8,4 +8,5 @@ public enum VehicleCategory {
     SPORTS_CAR,
     ELECTRIC,
     HYBRID
+
 }

@@ -5,4 +5,5 @@ public enum Role {
     ADMIN,
     MANAGER,
     CUSTOMER
+
 }
